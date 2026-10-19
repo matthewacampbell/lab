@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: media-smb
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: media-smb
+  template:
+    metadata:
+      labels:
+        app: media-smb
+    spec:
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+      containers:
+      - name: samba
+        image: dperson/samba
+        args:
+          - "-u"
+          - "matt;password"
+          - "-s"
+          - "movies;/movies;yes;no;no;matt;matt"
+          - "-s"
+          - "shows;/shows;yes;no;no;matt;matt"
+        ports:
+        - containerPort: 445
+          name: smb
+        volumeMounts:
+        - name: movies-volume
+          mountPath: /movies
+        - name: shows-volume
+          mountPath: /shows
+      volumes:
+      - name: movies-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-movies-pvc
+      - name: shows-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-shows-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: media-smb-service
+  namespace: jellyfin
+spec:
+  type: LoadBalancer
+  selector:
+    app: media-smb
+  ports:
+  - port: 445
+    targetPort: 445
+    name: smb

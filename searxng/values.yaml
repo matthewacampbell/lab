@@ -40,7 +40,7 @@ spec:
             - containerPort: 8080
           env:
             - name: SEARXNG_BASE_URL
-              value: "http://192.168.1.139/"
+              value: "http://10.10.10.106/"
           volumeMounts:
             - name: config
               mountPath: /etc/searxng

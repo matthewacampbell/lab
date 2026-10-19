@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: jellyfin
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: privileged
+    pod-security.kubernetes.io/warn: privileged
+  name: jellyfin
+  namespace: jellyfin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jellyfin
+  template:
+    metadata:
+      labels:
+        app: jellyfin
+    spec:
+      containers:
+      - image: jellyfin/jellyfin:latest
+        name: jellyfin
+        env:
+        - name: TZ
+          value: "Africa/Johannesburg"
+        ports:
+        - containerPort: 8096
+          name: web-tcp
+          protocol: TCP
+        volumeMounts:
+        - name: config-volume
+          mountPath: /config
+        - name: movies-volume
+          mountPath: /movies
+        - name: shows-volume
+          mountPath: /shows
+      volumes:
+      - name: config-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-config-pvc
+      - name: movies-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-movies-pvc
+      - name: shows-volume
+        persistentVolumeClaim:
+          claimName: jellyfin-shows-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jellyfin-service
+  namespace: jellyfin
+spec:
+  type: LoadBalancer
+  selector:
+    app: jellyfin
+  ports:
+  - port: 8096
+    targetPort: 8096
+    protocol: TCP
+    name: web
