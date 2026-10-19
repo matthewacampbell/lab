@@ -6,11 +6,13 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://github.com/you/your-repo.git
+    repoURL: https://github.com/matthewacampbell/lab.git
     targetRevision: main
     path: manifests
   destination:
     server: https://kubernetes.default.svc
     namespace: my-app
   syncPolicy:
+    syncOptions:
+    - CreateNamespace=true
     automated: {}
