@@ -19,6 +19,8 @@ spec:
             exclude: true
           - path: metallb
             exclude: true
+          - path: jellyfin
+            exclude: true
   template:
     metadata:
       name: "{{.path.basename}}"
